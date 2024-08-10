@@ -23,7 +23,23 @@ app.post("/adminSignup", (req, res) => {
     result.save()//it will store
     res.json({ "status": "success" })
 })
-
+app.post("/adminSignin",(req,res)=>{
+    let input=req.body
+    let result=loginModel.find({username:input.username}).then(
+        (response)=>{
+            if (response.length>0) {
+                const validator=bcrypt.compareSync(input.password,response[0].password)
+                if (validator) {
+                    res.json({ "status": "success" })
+                } else {
+                    res.json({ "status": "wrong password" })
+                }
+            } else {
+                res.json({ "status": "username doesnt exist" })
+            }
+        }
+    ).catch()
+})
 
 app.listen(3030, () => {
     console.log("server started")
