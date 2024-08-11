@@ -4,6 +4,7 @@ const express = require("express")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 const loginModel = require("./models/admin")
+
 const app = express()
 app.use(cors())
 app.use(express.json())
@@ -23,6 +24,7 @@ app.post("/adminSignup", (req, res) => {
     result.save()//it will store
     res.json({ "status": "success" })
 })
+//ADMINSIGNIN
 app.post("/adminSignin",(req,res)=>{
     let input=req.body
     let result=loginModel.find({username:input.username}).then(
@@ -30,7 +32,16 @@ app.post("/adminSignin",(req,res)=>{
             if (response.length>0) {
                 const validator=bcrypt.compareSync(input.password,response[0].password)
                 if (validator) {
-                    res.json({ "status": "success" })
+                   jwt.sign({email:input.username},"rescue-app",{expiresIn:"4d"},
+                    (error,token)=>{
+                        if (error) {
+                            res.json({ "status": "invalid authentication" })
+                            
+                        } else {
+                            res.json({ "status": "success","token":token })
+                        }
+                    }
+                   )
                 } else {
                     res.json({ "status": "wrong password" })
                 }
@@ -40,6 +51,19 @@ app.post("/adminSignin",(req,res)=>{
         }
     ).catch()
 })
+// app.post("/addPeople",(req,res)=>{
+//     let input=req.body
+//     let token=req.headers.token
+//     jwt.verify(token,"rescue-app",(error,decoded)=>{
+//         if (decoded && decoded.email) {
+//             let result=new missingModel(input)
+//             result.save()
+//             res.json({ "status": "success" })
+//         } else {
+//             res.json({ "status": "invalid authentication" })
+//         }
+//     })
+// })
 
 app.listen(3030, () => {
     console.log("server started")
